@@ -27,7 +27,11 @@ function updateOverlay(tabId, url, callback) {
 let url = 'http://cdn.cultofmac.com/wp-content/uploads/2013/06/Screen-Shot-2013-06-10-at-3.52.24-PM.jpg'
 
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
-  updateOverlay(request.tabId, url, callback)
+  console.log('backgorund listener', request);
+  if (request.action === 'show') {
+    updateOverlay(request.tabId, request.url, callback)
+  }
+  
 });
 
 function getHistory() {
