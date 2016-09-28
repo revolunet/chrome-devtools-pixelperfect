@@ -1,0 +1,16 @@
+{
+  "name": "PixelPerfect",
+  "version": "0.0.1",
+  "manifest_version": 3,
+  "description": "Adds DevTools panel support.",
+  "devtools_page": "devtools.html",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "omnibox": { "keyword" : "pixelperfect" },
+  "permissions": [
+    "tabs",
+    "http://*/*",
+    "https://*/*"
+  ]
+}
