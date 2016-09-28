@@ -1,5 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import Dropzone from 'react-dropzone'
+
+import Gallery from './Gallery'
 
 //const PixelPerfect = () => <h1>Yay 2!</h1>
 
@@ -11,32 +14,6 @@ const items = [{
   url: 'http://media.idownloadblog.com/wp-content/uploads/2013/07/iOS-7-Beta-4-screenshot-taking-Control-Center.png'
 }]
 
-const GalleryItem = ({ url, active, onClick }) => {
-  let style = {
-    cursor: 'pointer',
-    margin: 5,
-    display: 'inline-block',
-    border: '1px solid silver',
-    width: 100,
-    height: 100,
-    backgroundPosition: 'center center',
-    backgroundSize: 'contain',
-    backgroundRepeat: 'no-repeat',
-    backgroundImage: `url(${url})`
-  }
-  if (active) {
-    style.borderSize = 2
-    style.borderColor = 'black'
-  }
-  return <div onClick={ onClick } title={ url } style={ style }></div>
-}
-
-const Gallery = ({ onClick }) => {
-  return (<div>
-            { items.map((item, idx) => <GalleryItem onClick={ () => onClick(item) } key={ item.url } active={ idx===1 } url={ item.url } />) }
-          </div>);
-}
-
 function sendChromeRequest(data = {}, cb) {
   chrome.extension.sendRequest({
     tabId: chrome.devtools.inspectedWindow.tabId,
@@ -44,10 +21,13 @@ function sendChromeRequest(data = {}, cb) {
   }, cb);
 }
 
+const Intro = () => <div>Try to drop some files here :)</div>
 
 class PixelPerfect extends React.Component {
+  state = {
+    items: []
+  }
   onClick = item => {
-    console.log('onClick', item);
     sendChromeRequest({
       action: 'show',
       url: item.url
@@ -55,18 +35,53 @@ class PixelPerfect extends React.Component {
       console.log('onClick res', res);
     })
   }
-  onToggle() {
+  onDrop = (files) => {
+    files.forEach(file => {
+      var reader = new FileReader();
+      reader.onload = (readerEvt) => {
+        var b64 = readerEvt.target.result;
+        this.setState(prevState => ({
+          items: prevState.items.concat([{
+            url: b64
+          }])
+        }))
+      };
+      reader.readAsDataURL(file);
+    })
+  }
+  onSelect = item => {
+    console.log('onSelect', item);
     sendChromeRequest({
-      action: 'toggle',
+      action: 'show',
+      url: item.url
     }, function(res) {
-      console.log('onToggle res', res);
+      console.log('onClick res', res);
+    })
+  }
+  onUnselect = item => {
+    console.log('onUnselect', item);
+    sendChromeRequest({
+      action: 'show',
+      url: null
+    }, function(res) {
+      console.log('onClick res', res);
     })
   }
   render() {
+    const dropZoneStyle = {
+      width:'100%',
+      height: '100%',
+      backgroundColor: 'white'
+    }
+    const dropZoneActiveStyle = {
+      backgroundColor: 'silver'
+    }
     return (<div>
               <h3>Pixel Perfect</h3>
-              <button onClick={ this.onToggle }>toggle</button>
-              <Gallery onClick={ this.onClick } />
+              <Dropzone disableClick={ true } onDrop={this.onDrop} style={ dropZoneStyle } activeStyle={ dropZoneActiveStyle }>
+                <Gallery items={ this.state.items } onSelect={ this.onSelect } onUnselect={ this.onUnselect }/>
+                { this.state.items.length === 0 ? <Intro /> : null }
+              </Dropzone>
             </div>)
   }
 }

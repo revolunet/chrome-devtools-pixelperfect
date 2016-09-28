@@ -15,19 +15,26 @@ function getBase64FromImageUrl(url, cb) {
 }
 
 function updateOverlay(tabId, url, callback) {
+  console.log('updateOverlay', tabId, url)
   chrome.tabs.executeScript(tabId, { file: "content_script.js" }, function() {
-    getBase64FromImageUrl(url, function(b64) {
-      chrome.tabs.sendRequest(tabId, {url: b64}, function(results) {
-        callback(results)
+    if (url) {
+      getBase64FromImageUrl(url, function(b64) {
+        chrome.tabs.sendRequest(tabId, {url: b64}, function(results) {
+          callback(results)
+        });
       });
-    });
+    } else {
+      chrome.tabs.sendRequest(tabId, {url: null}, function(results) {
+          callback(results)
+        });
+    }
+    
   });
 }
 
 let url = 'http://cdn.cultofmac.com/wp-content/uploads/2013/06/Screen-Shot-2013-06-10-at-3.52.24-PM.jpg'
 
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
-  console.log('backgorund listener', request);
   if (request.action === 'show') {
     updateOverlay(request.tabId, request.url, callback)
   }
