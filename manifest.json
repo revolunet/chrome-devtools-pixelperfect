@@ -9,6 +9,8 @@
   },
   "omnibox": { "keyword" : "pixelperfect" },
   "permissions": [
+    "storage",
+    "unlimitedStorage",
     "tabs",
     "http://*/*",
     "https://*/*"

@@ -1,7 +1,7 @@
 import React from 'react'
 
-const GalleryItem = ({ url, active, onClick }) => {
-  let style = {
+const GalleryItem = ({ url, name, active, onClick, onCloseClick }) => {
+  const style = {
     cursor: 'pointer',
     margin: 5,
     display: 'inline-block',
@@ -13,18 +13,35 @@ const GalleryItem = ({ url, active, onClick }) => {
     backgroundPosition: 'center center',
     backgroundSize: 'contain',
     backgroundRepeat: 'no-repeat',
-    backgroundImage: `url(${url})`
+    backgroundImage: `url(${url})`,
+    position: 'relative'
+  }
+  const closeStyle = {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    background: 'white',
+    color: 'black',
+    width: 20,
+    height: 20,
+    textAlign: 'center'
   }
   if (active) {
     style.borderSize = 2
     style.borderColor = 'black'
   }
-  return <div onClick={ onClick } title={ url } style={ style }></div>
+  const close = e => {
+    e.stopPropagation()
+    onCloseClick();
+  }
+  return (<div onClick={ onClick } title={ name } style={ style }>
+      <div onClick={ close } style={ closeStyle }>x</div>
+    </div>)
 }
 
-const GalleryView = ({ items, onClick, activeItemIndex }) => {
+const GalleryView = ({ items, onClick, onCloseClick, activeItemIndex }) => {
   return (<div>
-            { items.map((item, idx) => <GalleryItem onClick={ () => onClick(item, idx) } key={ item.url } active={ idx===activeItemIndex } url={ item.url } />) }
+            { items.map((item, idx) => <GalleryItem onClick={ () => onClick(item, idx) } onCloseClick={ () => onCloseClick(item, idx) }  key={ item.key } active={ idx===activeItemIndex } url={ item.url } name={ item.name } />) }
           </div>);
 }
 
@@ -55,9 +72,15 @@ class Gallery extends React.Component {
       }
     })
   }
+  onCloseClick = (item, idx) => {
+    this.setState({
+      activeItemIndex: null
+    }, () => {
+      this.props.onRemoveItem(item, idx)
+    })
+  }
   render() {
-    console.log('render', this.state)
-    return <GalleryView { ...this.props } onClick={ this.onClick } activeItemIndex={ this.state.activeItemIndex }/>
+    return <GalleryView { ...this.props } onClick={ this.onClick } onCloseClick={ this.onCloseClick } activeItemIndex={ this.state.activeItemIndex }/>
   }
 
 }

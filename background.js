@@ -1,4 +1,39 @@
 
+class Storage {
+  constructor(storage) {
+    this.storage = storage
+  }
+  get(key, cb) {
+     this.storage.get(key, cb);
+  }
+  remove(key, cb) {
+     this.storage.remove(key, cb);
+  }
+  set(key, data, cb) {
+     this.storage.set({[key]: data}, cb);
+  }
+}
+
+const storageMock = {
+  get: (key, cb) => {
+    console.log('MOCK GET', key, cb)
+    cb()
+  },
+  remove: (key, cb) => {
+    console.log('MOCK REMOVE', key, cb)
+    cb()
+  },
+  set: (pair, cb) => {
+    console.log('MOCK SET -', pair, '-', '-', cb)
+    cb()
+  }
+}
+
+const getStorage = () => {
+  return new Storage(chrome && chrome.storage && chrome.storage.local || storageMock)
+}
+
+ 
 function getBase64FromImageUrl(url, cb) {
     var img = new Image();
     img.setAttribute('crossOrigin', 'anonymous');
@@ -32,15 +67,28 @@ function updateOverlay(tabId, url, callback) {
   });
 }
 
-let url = 'http://cdn.cultofmac.com/wp-content/uploads/2013/06/Screen-Shot-2013-06-10-at-3.52.24-PM.jpg'
-
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
   if (request.action === 'show') {
     updateOverlay(request.tabId, request.url, callback)
+  } else if (request.action === 'save') {
+    getStorage().set(request.key, request.data, result => {
+      console.log('storage.set OK', result)
+      callback(result)
+    })
+  } else if (request.action === 'get') {
+    getStorage().get(request.key, result => {
+      console.log('storage.get OK', result)
+      callback(result)
+    })
+  } else if (request.action === 'remove') {
+    getStorage().remove(request.key, result => {
+      console.log('storage.remove OK', result)
+      callback(result)
+    })
   }
-  
 });
 
+// TODO
 function getHistory() {
   return [
     {content: "one", description: "the first one"},

@@ -39,12 +39,20 @@ class PixelPerfect extends React.Component {
     files.forEach(file => {
       var reader = new FileReader();
       reader.onload = (readerEvt) => {
-        var b64 = readerEvt.target.result;
-        this.setState(prevState => ({
-          items: prevState.items.concat([{
-            url: b64
-          }])
-        }))
+        let data = {
+          url: readerEvt.target.result,
+          name: file.name
+        }
+        sendChromeRequest({
+          action: 'save',
+          key: file.preview,
+          data: data
+        }, (res) => {
+          console.log('save request callback', res);
+          this.setState(prevState => ({
+            items: prevState.items.concat([data])
+          }))
+        })
       };
       reader.readAsDataURL(file);
     })
@@ -55,7 +63,7 @@ class PixelPerfect extends React.Component {
       action: 'show',
       url: item.url
     }, function(res) {
-      console.log('onClick res', res);
+      console.log('onSelect res', res);
     })
   }
   onUnselect = item => {
@@ -64,7 +72,46 @@ class PixelPerfect extends React.Component {
       action: 'show',
       url: null
     }, function(res) {
-      console.log('onClick res', res);
+      console.log('onUnselect res', res);
+    })
+  }
+  onRemoveItem = (item, idx) => {
+    console.log('onRemoveItem', item, idx);
+    this.setState(prevState => {
+      prevState.items.splice(idx, 1);
+      return {
+        items: prevState.items
+      }
+    }, () => {
+      sendChromeRequest({
+        action: 'remove',
+        key: item.key
+      }, function(res) {
+        console.log('onRemoveItem res', res);
+      })
+      sendChromeRequest({
+        action: 'show',
+        url: null
+      }, function(res) {
+        console.log('onRemoveItem res', res);
+      })
+    })
+  } 
+  componentDidMount() {
+    sendChromeRequest({
+      action: 'get',
+      key: null
+    }, (res) => {
+      console.log('get res', res);
+      const items = Object.keys(res).map(key => {
+        return {
+          key,
+          ...res[key]
+        }
+      })
+      this.setState({
+        items
+      })
     })
   }
   render() {
@@ -79,7 +126,7 @@ class PixelPerfect extends React.Component {
     return (<div>
               <h3>Pixel Perfect</h3>
               <Dropzone disableClick={ true } onDrop={this.onDrop} style={ dropZoneStyle } activeStyle={ dropZoneActiveStyle }>
-                <Gallery items={ this.state.items } onSelect={ this.onSelect } onUnselect={ this.onUnselect }/>
+                <Gallery items={ this.state.items } onSelect={ this.onSelect } onUnselect={ this.onUnselect } onRemoveItem={ this.onRemoveItem }/>
                 { this.state.items.length === 0 ? <Intro /> : null }
               </Dropzone>
             </div>)
