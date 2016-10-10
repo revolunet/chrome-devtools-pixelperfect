@@ -8,9 +8,11 @@ Drop files into devtools and use them as a overlay on your webpage
 
 Clone the repo then Chrome > Extension > Add unpacked extension
 
+## Usage
+
 Close/open devtools and Select "Pixel Perfect" in the DevTools panel.
 
-Click on a thumbnail to show/hide it in the page
+Drag & Drop files and click a thumbnail to show/hide it in the page
 
 By default the layer is stretched to 100% of the screen
 
