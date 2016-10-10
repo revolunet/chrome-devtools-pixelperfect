@@ -10,6 +10,10 @@ Clone the repo then Chrome > Extension > Add unpacked extension
 
 Close/open devtools and Select "Pixel Perfect" in the DevTools panel.
 
+Click on a thumbnail to show/hide it in the page
+
+By default the layer is stretched to 100% of the screen
+
 ## Todo
 
  - hotkey to toggle the layer
